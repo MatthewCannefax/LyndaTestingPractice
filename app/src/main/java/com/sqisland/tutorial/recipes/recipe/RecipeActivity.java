@@ -29,9 +29,8 @@ public class RecipeActivity extends AppCompatActivity {
         descTV = findViewById(R.id.description);
 
         RecipeStore store = new RecipeStore(this, "recipes");
-        Bundle extras = getIntent().getExtras();
-
-        final Recipe recipe = store.getRecipe(extras.getString(KEY_ID));
+        String id = getIntent().getStringExtra(KEY_ID);
+        final Recipe recipe = store.getRecipe(id);
 
         if(recipe == null){
             titleTV.setVisibility(View.GONE);
