@@ -1,10 +1,14 @@
 package com.sqisland.tutorial.recipes.recipe;
 
 import android.content.Intent;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.rule.ActivityTestRule;
 
 import com.sqisland.tutorial.recipes.R;
+import com.sqisland.tutorial.recipes.TestRecipeApplication;
+import com.sqisland.tutorial.recipes.data.local.InMemoryFavorites;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -16,13 +20,24 @@ import static android.support.test.espresso.matcher.ViewMatchers.isSelected;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.core.IsNot.not;
-import static org.junit.Assert.*;
 
 public class RecipeActivityTest {
 
+    private static final String CARROTS_ID = "creamed_carrots";
     @Rule
     public ActivityTestRule<RecipeActivity> activityRule = new ActivityTestRule<>(
             RecipeActivity.class, true, false);
+
+
+    private InMemoryFavorites favorites;
+
+    @Before
+    public void clearFavorites(){
+        TestRecipeApplication app = (TestRecipeApplication) InstrumentationRegistry
+                .getTargetContext().getApplicationContext();
+        favorites = (InMemoryFavorites) app.getFavorites();
+        favorites.clear();
+    }
 
     @Test
     public void recipeNotFound(){
@@ -34,14 +49,28 @@ public class RecipeActivityTest {
 
     @Test
     public void clickToFavorite(){
-        Intent intent = new Intent();
-        intent.putExtra(RecipeActivity.KEY_ID, "creamed_carrots");
-        activityRule.launchActivity(intent);
+        launchRecipe(CARROTS_ID);
 
         onView(withId(R.id.title)).check(matches(withText("Creamed Carrots")))
                 .check(matches(not(isSelected())))
                 .perform(click())
                 .check(matches(isSelected()));
     }
+
+    @Test
+    public void alreadyFavorite(){
+        favorites.put(CARROTS_ID, true);
+
+        launchRecipe(CARROTS_ID);
+
+        onView(withId(R.id.title)).check(matches(isSelected()));
+    }
+
+    private void launchRecipe(String id) {
+        Intent intent = new Intent();
+        intent.putExtra(RecipeActivity.KEY_ID, "creamed_carrots");
+        activityRule.launchActivity(intent);
+    }
+
 
 }
